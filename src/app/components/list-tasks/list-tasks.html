@@ -1,0 +1,257 @@
+<div class="list-container">
+    <div class="list-card">
+        <div class="list-header">
+            <h2>Listagem de Tarefas</h2>
+        </div>
+
+        <div *ngIf="isLoadingData" class="alert alert-info">
+            Carregando dados do servidor...
+        </div>
+
+        <form [formGroup]="filterForm" class="filter-form" [class.disabled]="isLoadingData"
+            [style.pointer-events]="isLoadingData ? 'none' : 'auto'" [style.opacity]="isLoadingData ? '0.6' : '1'">
+
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="numero">Número:</label>
+                    <input type="text" id="numero" formControlName="numero" class="filter-control"
+                        placeholder="Digite o número">
+                </div>
+
+                <div class="filter-group filter-group-large">
+                    <label for="tituloDescricao">Título/Descrição:</label>
+                    <input type="text" id="tituloDescricao" formControlName="tituloDescricao" class="filter-control"
+                        placeholder="Digite título ou descrição">
+                </div>
+            </div>
+
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="responsavel">Responsável:</label>
+                    <select id="responsavel" formControlName="responsavel" class="filter-control">
+                        <option value="">Selecione um responsável</option>
+                        <option *ngFor="let pessoa of responsaveis" [value]="pessoa">{{ pessoa }}</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="prioridade">Prioridade:</label>
+                    <select id="prioridade" formControlName="prioridade" class="filter-control">
+                        <option value="">Selecione uma prioridade</option>
+                        <option *ngFor="let prioridade of prioridadesList" [value]="prioridade">
+                            {{ prioridade }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="situacao">Situação:</label>
+                    <select id="situacao" formControlName="situacao" class="filter-control">
+                        <option value="">Selecione uma opção</option>
+                        <option *ngFor="let status of statusList" [value]="status">
+                            {{ status }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <button type="button" (click)="buscarTarefas()" class="btn-buscar" [disabled]="isLoadingData">
+                        Buscar Tarefas
+                    </button>
+                </div>
+            </div>
+        </form>
+
+
+        <div *ngIf="errorMessage" class="alert alert-error">
+            {{ errorMessage }}
+        </div>
+
+        <div *ngIf="successMessage" class="alert alert-success">
+            {{ successMessage }}
+        </div>
+
+        <div class="table-container" *ngIf="!isLoadingData">
+            <table class="tasks-table">
+                <thead>
+                    <tr>
+                        <th class="sortable-header" (click)="ordenarPor('id')" [class.sorted]="isSorted('id')">
+                            Número
+                            <span class="sort-icon" [class]="getSortIcon('id')">↕</span>
+                        </th>
+                        <th class="sortable-header" (click)="ordenarPor('titulo')" [class.sorted]="isSorted('titulo')">
+                            Título
+                            <span class="sort-icon" [class]="getSortIcon('titulo')">↕</span>
+                        </th>
+                        <th class="sortable-header" (click)="ordenarPor('responsavel')"
+                            [class.sorted]="isSorted('responsavel')">
+                            Responsável
+                            <span class="sort-icon" [class]="getSortIcon('responsavel')">↕</span>
+                        </th>
+                        <th class="sortable-header" (click)="ordenarPor('prioridade')"
+                            [class.sorted]="isSorted('prioridade')">
+                            Prioridade
+                            <span class="sort-icon" [class]="getSortIcon('prioridade')">↕</span>
+                        </th>
+                        <th class="sortable-header" (click)="ordenarPor('status')" [class.sorted]="isSorted('status')">
+                            Status
+                            <span class="sort-icon" [class]="getSortIcon('status')">↕</span>
+                        </th>
+                        <th class="sortable-header" (click)="ordenarPor('deadline')"
+                            [class.sorted]="isSorted('deadline')">
+                            Deadline
+                            <span class="sort-icon" [class]="getSortIcon('deadline')">↕</span>
+                        </th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let task of filteredTasks; trackBy: trackByTaskId"
+                        [class]="getStatusClass(task.status)">
+                        <td>{{ task.id }}</td>
+                        <td class="titulo-cell">
+                            <div class="titulo">{{ task.titulo }}</div>
+                            <div class="descricao">{{ task.descricao }}</div>
+                        </td>
+                        <td>{{ task.responsavel }}</td>
+                        <td>
+                            <span class="prioridade-badge" [class]="getPrioridadeClass(task.prioridade)">
+                                {{ task.prioridade | titlecase }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge" [class]="getStatusClass(task.status)">
+                                {{ task.status }}
+                            </span>
+                        </td>
+                        <td>{{ formatarData(task.deadline) }}</td>
+                        <td class="acoes-cell">
+                            <button type="button" (click)="editarTarefa(task.id)" class="btn-acao btn-editar"
+                                [title]="isTarefaConcluida(task) ? 'Tarefas concluídas não podem ser editadas' : 'Editar'"
+                                [disabled]="isTarefaConcluida(task)">
+                                Editar
+                            </button>
+                            <button type="button" (click)="excluirTarefa(task.id)" class="btn-acao btn-excluir"
+                                [title]="isTarefaConcluida(task) ? 'Tarefas concluídas não podem ser excluídas' : 'Excluir'"
+                                [disabled]="isTarefaConcluida(task)">
+                                Excluir
+                            </button>
+                            <button type="button" (click)="concluirTarefa(task.id)" class="btn-acao btn-concluir"
+                                [title]="isTarefaConcluida(task) ? 'Tarefa já concluída' : 'Concluir'"
+                                [disabled]="isTarefaConcluida(task)">
+                                Concluir
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="filteredTasks.length === 0 && !isLoadingData">
+                        <td colspan="7" class="empty-message">
+                            Nenhuma tarefa encontrada com os filtros aplicados.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-footer" *ngIf="!isLoadingData">
+            <p>Total de tarefas: {{ filteredTasks.length }} / {{ tasks.length }}</p>
+            <button type="button" (click)="limparFiltros()" class="btn-limpar">
+                Limpar Filtros
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edição -->
+<div class="modal-overlay" *ngIf="isEditModalOpen" (click)="fecharModalEdicao()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Editar Tarefa</h3>
+            <button type="button" class="modal-close" (click)="fecharModalEdicao()">×</button>
+        </div>
+
+        <div class="modal-body">
+            <div *ngIf="editErrorMessage" class="alert alert-error">
+                {{ editErrorMessage }}
+            </div>
+
+            <form [formGroup]="editForm" (ngSubmit)="salvarEdicao()">
+                <div class="form-group">
+                    <label for="edit-titulo">Título *</label>
+                    <input type="text" id="edit-titulo" formControlName="titulo" class="form-control"
+                        [class.error]="temErro('titulo')" placeholder="Digite o título da tarefa">
+                    <div *ngIf="temErro('titulo')" class="error-message">
+                        {{ getMensagemErro('titulo') }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-descricao">Descrição *</label>
+                    <textarea id="edit-descricao" formControlName="descricao" class="form-control"
+                        [class.error]="temErro('descricao')" placeholder="Digite a descrição da tarefa"
+                        rows="3"></textarea>
+                    <div *ngIf="temErro('descricao')" class="error-message">
+                        {{ getMensagemErro('descricao') }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-responsavel">Responsável *</label>
+                    <input type="text" id="edit-responsavel" formControlName="responsavel" class="form-control"
+                        [class.error]="temErro('responsavel')" placeholder="Digite o nome do responsável">
+                    <div *ngIf="temErro('responsavel')" class="error-message">
+                        {{ getMensagemErro('responsavel') }}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-prioridade">Prioridade *</label>
+                        <select id="edit-prioridade" formControlName="prioridade" class="form-control"
+                            [class.error]="temErro('prioridade')">
+                            <option value="">Selecione a prioridade</option>
+                            <option value="Baixa">Baixa</option>
+                            <option value="Média">Média</option>
+                            <option value="Alta">Alta</option>
+                        </select>
+                        <div *ngIf="temErro('prioridade')" class="error-message">
+                            {{ getMensagemErro('prioridade') }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-status">Status *</label>
+                        <select id="edit-status" formControlName="status" class="form-control"
+                            [class.error]="temErro('status')">
+                            <option value="">Selecione o status</option>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Em Andamento">Em Andamento</option>
+                            <option value="Concluída">Concluída</option>
+                        </select>
+                        <div *ngIf="temErro('status')" class="error-message">
+                            {{ getMensagemErro('status') }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-deadline">Deadline *</label>
+                    <input type="date" id="edit-deadline" formControlName="deadline" class="form-control"
+                        [class.error]="temErro('deadline')">
+                    <div *ngIf="temErro('deadline')" class="error-message">
+                        {{ getMensagemErro('deadline') }}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-cancelar" (click)="fecharModalEdicao()" [disabled]="isEditLoading">
+                Cancelar
+            </button>
+            <button type="button" class="btn-salvar" (click)="salvarEdicao()"
+                [disabled]="isEditLoading || editForm.invalid">
+                {{ isEditLoading ? 'Salvando...' : 'Salvar' }}
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,45 @@
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Login</h2>
+            <p>Entre com suas credenciais</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+
+            <div class="form-group">
+                <label for="username">Usuário</label>
+                <input type="text" id="username" formControlName="username" class="form-control"
+                    [class.error]="username?.invalid && username?.touched" placeholder="Digite seu usuário" />
+                <div *ngIf="username?.invalid && username?.touched" class="error-message">
+                    <span *ngIf="username?.errors?.['required']">Usuário é obrigatório</span>
+                    <span *ngIf="username?.errors?.['minlength']">Usuário deve ter pelo menos 3 caracteres</span>
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" formControlName="senha" class="form-control"
+                    [class.error]="senha?.invalid && senha?.touched" placeholder="Digite sua senha" />
+                <div *ngIf="senha?.invalid && senha?.touched" class="error-message">
+                    <span *ngIf="senha?.errors?.['required']">Senha é obrigatória</span>
+                    <span *ngIf="senha?.errors?.['minlength']">Senha deve ter pelo menos 3 caracteres</span>
+                </div>
+            </div>
+
+            <div *ngIf="errorMessage" class="alert alert-error">
+                {{ errorMessage }}
+            </div>
+
+
+            <button type="submit" class="btn-login" [disabled]="isLoading" [class.loading]="isLoading">
+                <span *ngIf="!isLoading">Entrar</span>
+                <span *ngIf="isLoading">Entrando...</span>
+            </button>
+            <div class="login-footer">
+                <p>Não tem uma conta? <a routerLink="/usuario/cadastrar">Registrar</a></p>
+            </div>
+        </form>
+    </div>
+</div>

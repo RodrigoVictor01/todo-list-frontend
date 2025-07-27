@@ -1,0 +1,87 @@
+<div class="cadastrar-container">
+    <div class="cadastrar-card">
+        <div class="cadastrar-header">
+            <h2>Cadastrar Tarefa</h2>
+        </div>
+
+        <div *ngIf="isLoadingData" class="alert alert-info">
+            Carregando dados do servidor...
+        </div>
+
+        <form [formGroup]="taskForm" (ngSubmit)="onSubmit()" class="cadastrar-form" [class.disabled]="isLoadingData"
+            [style.pointer-events]="isLoadingData ? 'none' : 'auto'" [style.opacity]="isLoadingData ? '0.6' : '1'">
+            <div class="form-group">
+                <label for="titulo">Título</label>
+                <input type="text" id="titulo" formControlName="titulo" class="form-control"
+                    [class.error]="titulo?.invalid && titulo?.touched" placeholder="Digite o título da tarefa" />
+                <div *ngIf="titulo?.invalid && titulo?.touched" class="error-message">
+                    <span *ngIf="titulo?.errors?.['required']">Título é obrigatório</span>
+                    <span *ngIf="titulo?.errors?.['minlength']">Título deve ter pelo menos 3 caracteres</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea id="descricao" formControlName="descricao" class="form-control" rows="4"
+                    [class.error]="descricao?.invalid && descricao?.touched"
+                    placeholder="Digite a descrição da tarefa"></textarea>
+                <div *ngIf="descricao?.invalid && descricao?.touched" class="error-message">
+                    <span *ngIf="descricao?.errors?.['required']">Descrição é obrigatória</span>
+                    <span *ngIf="descricao?.errors?.['minlength']">Descrição deve ter pelo menos 10 caracteres</span>
+                    <span *ngIf="descricao?.errors?.['maxlength']">Descrição deve ter no máximo 500 caracteres</span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="responsavel">Responsável</label>
+                    <select id="responsavel" formControlName="responsavel" class="form-control"
+                        [class.error]="responsavel?.invalid && responsavel?.touched">
+                        <option value="">Selecione</option>
+                        <option *ngFor="let pessoa of responsaveis" [value]="pessoa">{{ pessoa }}</option>
+                    </select>
+                    <div *ngIf="responsavel?.invalid && responsavel?.touched" class="error-message">
+                        <span *ngIf="responsavel?.errors?.['required']">Responsável é obrigatório</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="prioridade">Prioridade</label>
+                    <select id="prioridade" formControlName="prioridade" class="form-control"
+                        [class.error]="prioridade?.invalid && prioridade?.touched">
+                        <option value="">Selecione</option>
+                        <option *ngFor="let prio of prioridades" [value]="prio">
+                            {{ prio | titlecase }}
+                        </option>
+                    </select>
+                    <div *ngIf="prioridade?.invalid && prioridade?.touched" class="error-message">
+                        <span *ngIf="prioridade?.errors?.['required']">Prioridade é obrigatória</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="deadline">Deadline</label>
+                <input type="date" id="deadline" formControlName="deadline" class="form-control"
+                    [class.error]="deadline?.invalid && deadline?.touched" [min]="minDate" />
+                <div *ngIf="deadline?.invalid && deadline?.touched" class="error-message">
+                    <span *ngIf="deadline?.errors?.['required']">Deadline é obrigatório</span>
+                    <span *ngIf="deadline?.errors?.['dateInPast']">Deadline não pode ser anterior ao dia de hoje</span>
+                </div>
+            </div>
+
+            <div *ngIf="errorMessage" class="alert alert-error">
+                {{ errorMessage }}
+            </div>
+
+            <div *ngIf="successMessage" class="alert alert-success">
+                {{ successMessage }}
+            </div>
+
+            <button type="submit" class="btn-cadastrar" [disabled]="isLoading" [class.loading]="isLoading">
+                <span *ngIf="!isLoading">Cadastrar</span>
+                <span *ngIf="isLoading">Cadastrando...</span>
+            </button>
+        </form>
+    </div>
+</div>

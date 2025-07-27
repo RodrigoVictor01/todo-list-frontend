@@ -1,0 +1,66 @@
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-logo">
+            <a routerLink="/" class="logo-link">
+                <i class="logo-icon">📋</i>
+                <span class="logo-text">TodoList</span>
+            </a>
+        </div>
+        <div class="nav-toggle" (click)="toggleMenu()" [class.active]="isMenuOpen">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <ul class="nav-menu" [class.active]="isMenuOpen" *ngIf="isAuthenticated">
+            <li class="nav-item">
+                <a routerLink="/tarefas/cadastrar" class="nav-link" [class.active]="isActive('/tarefas/cadastrar')"
+                    (click)="closeMenu()">
+                    <i class="nav-icon">➕</i>
+                    <span>Nova Tarefa</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a routerLink="/tarefas/listar" class="nav-link" [class.active]="isActive('/tarefas/listar')"
+                    (click)="closeMenu()">
+                    <i class="nav-icon">📝</i>
+                    <span>Ver Tarefas</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a routerLink="/usuario/cadastrar" class="nav-link" [class.active]="isActive('/usuario/cadastrar')"
+                    (click)="closeMenu()">
+                    <i class="nav-icon">👤</i>
+                    <span>Cadastrar Usuário</span>
+                </a>
+            </li>
+
+            <li class="nav-divider"></li>
+
+            <li class="nav-item">
+                <button class="nav-link logout-btn" (click)="logout()">
+                    <i class="nav-icon">🚪</i>
+                    <span>Sair</span>
+                </button>
+            </li>
+        </ul>
+
+        <ul class="nav-menu" [class.active]="isMenuOpen" *ngIf="!isAuthenticated">
+            <li class="nav-item">
+                <a routerLink="/login" class="nav-link" [class.active]="isActive('/login')" (click)="closeMenu()">
+                    <i class="nav-icon">🔐</i>
+                    <span>Login</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="user-info" *ngIf="isAuthenticated && currentUser">
+            <div class="user-avatar">
+                <i class="user-icon">👨‍💼</i>
+            </div>
+            <span class="user-name">{{ currentUser }}</span>
+        </div>
+    </div>
+</nav>
